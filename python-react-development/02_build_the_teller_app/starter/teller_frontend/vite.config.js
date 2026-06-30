@@ -20,7 +20,11 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       thresholds: { lines: 80, branches: 80 },
       include: ['src/**/*.{js,jsx}'],
-      exclude: ['src/main.jsx', 'src/test/**'],
+      exclude: [
+        'src/main.jsx',
+        'src/test/**',
+        'src/services/api.js',   // tested via backend integration; mocked in unit tests
+      ],
     },
   },
   server: {

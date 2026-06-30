@@ -45,23 +45,25 @@ const fillForm = async (src = SRC, dst = DST, amt = '100') => {
 beforeEach(() => vi.clearAllMocks());
 
 describe('Transfer page', () => {
+  // Helper: wait for the modal heading to appear (avoids ambiguity with the button text)
+  const waitForModal = () =>
+    waitFor(() => expect(screen.getByRole('heading', { name: /confirm transfer/i })).toBeInTheDocument());
+
   it('TRF-1: "Review Transfer" opens the confirmation modal', async () => {
     renderTransfer();
     await fillForm();
     await userEvent.click(screen.getByRole('button', { name: /review transfer/i }));
-    await waitFor(() =>
-      expect(screen.getByText('Confirm Transfer')).toBeInTheDocument(),
-    );
+    await waitForModal();
   });
 
   it('TRF-2: modal shows source IBAN, destination IBAN, and amount', async () => {
     renderTransfer();
     await fillForm();
     await userEvent.click(screen.getByRole('button', { name: /review transfer/i }));
-    await waitFor(() => screen.getByText('Confirm Transfer'));
+    await waitForModal();
     expect(screen.getByText(/DE89 5457/)).toBeInTheDocument();
     expect(screen.getByText(/DE89 8506/)).toBeInTheDocument();
-    expect(screen.getByText('€100.00')).toBeInTheDocument();
+    expect(screen.getAllByText('€100.00').length).toBeGreaterThanOrEqual(1);
   });
 
   it('TRF-3: confirming calls transferByIban with correct args', async () => {
@@ -69,7 +71,7 @@ describe('Transfer page', () => {
     renderTransfer();
     await fillForm();
     await userEvent.click(screen.getByRole('button', { name: /review transfer/i }));
-    await waitFor(() => screen.getByText('Confirm Transfer'));
+    await waitForModal();
     await userEvent.click(screen.getByRole('button', { name: /^confirm transfer$/i }));
     await waitFor(() =>
       expect(api.transferByIban).toHaveBeenCalledWith(SRC, DST, 100),
@@ -81,12 +83,12 @@ describe('Transfer page', () => {
     renderTransfer();
     await fillForm();
     await userEvent.click(screen.getByRole('button', { name: /review transfer/i }));
-    await waitFor(() => screen.getByText('Confirm Transfer'));
+    await waitForModal();
     await userEvent.click(screen.getByRole('button', { name: /^confirm transfer$/i }));
     await waitFor(() =>
       expect(screen.getByText(/transfer posted/i)).toBeInTheDocument(),
     );
-    expect(screen.getByText(/€5,000.00/)).toBeInTheDocument();
+    expect(screen.getByText(/€5,000\.00/)).toBeInTheDocument();
   });
 
   it('TRF-5: HTTP 403 surfaces backend detail message', async () => {
@@ -95,7 +97,7 @@ describe('Transfer page', () => {
     renderTransfer();
     await fillForm();
     await userEvent.click(screen.getByRole('button', { name: /review transfer/i }));
-    await waitFor(() => screen.getByText('Confirm Transfer'));
+    await waitForModal();
     await userEvent.click(screen.getByRole('button', { name: /^confirm transfer$/i }));
     await waitFor(() =>
       expect(screen.getByText(/insufficient funds/i)).toBeInTheDocument(),
@@ -139,11 +141,13 @@ describe('Transfer page', () => {
     renderTransfer();
     await fillForm();
     await userEvent.click(screen.getByRole('button', { name: /review transfer/i }));
-    await waitFor(() => screen.getByText('Confirm Transfer'));
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /confirm transfer/i })).toBeInTheDocument(),
+    );
     await userEvent.click(screen.getByRole('button', { name: /^confirm transfer$/i }));
     await waitFor(() => screen.getByText(/transfer posted/i));
-    expect(screen.getByLabelText(/source iban/i)).toHaveValue('');
-    expect(screen.getByLabelText(/destination iban/i)).toHaveValue('');
-    expect(screen.getByLabelText(/amount/i)).toHaveValue('');
+    // After reset the inputs should be empty
+    const textboxes = screen.getAllByRole('textbox');
+    textboxes.forEach((tb) => expect(tb).toHaveValue(''));
   });
 });

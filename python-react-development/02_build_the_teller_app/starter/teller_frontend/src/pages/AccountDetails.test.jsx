@@ -98,8 +98,9 @@ describe('AccountDetails page', () => {
     api.getTransactions.mockResolvedValueOnce(mockTransactions);
     renderPage();
     await waitFor(() => screen.getByText('PAYMENT'));
-    // Open MultiSelect via its toggle button (combobox role)
-    const toggleBtn = screen.getByRole('combobox', { name: /filter by type/i });
+    // The MultiSelect toggle button is the combobox inside #type-filter
+    const multiSelectContainer = document.getElementById('type-filter');
+    const toggleBtn = multiSelectContainer.querySelector('[role="combobox"]');
     await userEvent.click(toggleBtn);
     // Click the TRANSFER_OUT option in the listbox
     await waitFor(() => screen.getByRole('option', { name: /TRANSFER_OUT/i }));

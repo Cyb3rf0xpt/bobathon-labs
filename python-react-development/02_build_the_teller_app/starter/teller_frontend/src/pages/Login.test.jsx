@@ -43,8 +43,11 @@ describe('Login page', () => {
     expect(getPassword()).toBeInTheDocument();
   });
 
-  it('LOG-2: submit button is disabled when fields are empty', () => {
+  it('LOG-2: submit button is disabled when both fields are cleared', async () => {
+    // .env pre-fills the fields — clear them to test the disabled state
     renderLogin();
+    await userEvent.clear(getUsername());
+    await userEvent.clear(getPassword());
     const btn = screen.getByRole('button', { name: /sign in/i });
     expect(btn).toBeDisabled();
   });
@@ -53,6 +56,9 @@ describe('Login page', () => {
     api.login.mockResolvedValueOnce({ access_token: 'teller' });
     api.getAuthToken.mockReturnValue('teller');
     renderLogin();
+    // Clear pre-filled values then type fresh credentials
+    await userEvent.clear(getUsername());
+    await userEvent.clear(getPassword());
     await userEvent.type(getUsername(), 'teller');
     await userEvent.type(getPassword(), 'teller123');
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));

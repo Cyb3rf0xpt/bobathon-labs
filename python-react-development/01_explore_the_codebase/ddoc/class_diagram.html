@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Class Diagram – Corebank Demo API</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #ffffff;
+    color: #1f2328;
+    padding: 32px 24px;
+  }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #57606a; font-size: 13px; margin-bottom: 32px; }
+  .canvas-wrap {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 32px;
+    overflow-x: auto;
+  }
+  svg { display: block; margin: 0 auto; }
+
+  /* UML class box */
+  .cls-box rect { fill: #ffffff; stroke: #3b82d4; stroke-width: 1.5; }
+  .cls-title { fill: #3b82d4; }
+  .cls-header rect { fill: #3b82d4; }
+  .cls-header text { fill: #ffffff; font-weight: 700; font-size: 13px; }
+  .cls-section text { fill: #1f2328; font-size: 12px; }
+  .cls-divider { stroke: #e5e7eb; stroke-width: 1; }
+  .stereotype { fill: #ffffff; font-size: 10px; font-style: italic; opacity: 0.85; }
+
+  /* Pydantic model */
+  .pyd-header rect { fill: #7c5cd8; }
+  .pyd-header text { fill: #ffffff; font-weight: 700; font-size: 13px; }
+  .pyd-box rect { fill: #ffffff; stroke: #7c5cd8; stroke-width: 1.5; }
+
+  /* Utility */
+  .util-header rect { fill: #57606a; }
+  .util-header text { fill: #ffffff; font-weight: 700; font-size: 13px; }
+  .util-box rect { fill: #ffffff; stroke: #57606a; stroke-width: 1.5; }
+
+  /* Arrows */
+  .arrow-dep { stroke: #57606a; stroke-width: 1.5; stroke-dasharray: 6 3; fill: none; }
+  .arrow-assoc { stroke: #3b82d4; stroke-width: 1.5; fill: none; }
+  .arrow-head { fill: #57606a; }
+  .arrow-head-blue { fill: #3b82d4; }
+  .arrow-head-purple { fill: #7c5cd8; }
+  .dep-purple { stroke: #7c5cd8; stroke-width: 1.5; stroke-dasharray: 6 3; fill: none; }
+  .lbl { font-size: 11px; fill: #57606a; }
+
+  .legend-rect { rx: 3; }
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+  }
+</style>
+</head>
+<body>
+<h1>Class Diagram — Corebank Demo API</h1>
+<p class="subtitle">FastAPI application · demo_api.py · teller_client.py · backoffice_client.py</p>
+
+<div class="canvas-wrap">
+<svg viewBox="0 0 1100 780" width="1100" height="780" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- ═══════════════════════════════════════════
+       FASTAPI APP (centre-top)
+  ═══════════════════════════════════════════ -->
+  <!-- Box: FastAPI app instance -->
+  <g class="cls-box" transform="translate(410,20)">
+    <rect width="200" height="56" rx="4"/>
+    <g class="cls-header"><rect width="200" height="26" rx="4"/><rect width="200" height="10" y="16"/></g>
+    <text class="stereotype" x="100" y="10" text-anchor="middle">«FastAPI instance»</text>
+    <text class="cls-header" x="100" y="20" text-anchor="middle">app</text>
+    <g class="cls-section">
+      <text x="8" y="44">title: str = 'Corebank Demo API v5'</text>
+    </g>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       PYDANTIC MODELS (top row)
+  ═══════════════════════════════════════════ -->
+  <!-- Transfer -->
+  <g class="pyd-box" transform="translate(30,140)">
+    <rect width="230" height="90" rx="4"/>
+    <g class="pyd-header"><rect width="230" height="26" rx="4"/><rect width="230" height="10" y="16"/></g>
+    <text class="stereotype" x="115" y="10" text-anchor="middle">«Pydantic BaseModel»</text>
+    <text class="pyd-header" x="115" y="20" text-anchor="middle">Transfer</text>
+    <g class="cls-section">
+      <text x="8" y="44">+ source_account_id: str</text>
+      <text x="8" y="60">+ destination_account_id: str</text>
+      <text x="8" y="76">+ amount_eur: Decimal(gt=0)</text>
+    </g>
+  </g>
+
+  <!-- ManualTx -->
+  <g class="pyd-box" transform="translate(290,140)">
+    <rect width="210" height="90" rx="4"/>
+    <g class="pyd-header"><rect width="210" height="26" rx="4"/><rect width="210" height="10" y="16"/></g>
+    <text class="stereotype" x="105" y="10" text-anchor="middle">«Pydantic BaseModel»</text>
+    <text class="pyd-header" x="105" y="20" text-anchor="middle">ManualTx</text>
+    <g class="cls-section">
+      <text x="8" y="44">+ amount_eur: float</text>
+      <text x="8" y="60">+ type: str</text>
+      <text x="8" y="76">+ booking_ts: str</text>
+    </g>
+  </g>
+
+  <!-- OAuth2PasswordRequestForm -->
+  <g class="pyd-box" transform="translate(530,140)">
+    <rect width="250" height="74" rx="4"/>
+    <g class="pyd-header"><rect width="250" height="26" rx="4"/><rect width="250" height="10" y="16"/></g>
+    <text class="stereotype" x="125" y="10" text-anchor="middle">«FastAPI form»</text>
+    <text class="pyd-header" x="125" y="20" text-anchor="middle">OAuth2PasswordRequestForm</text>
+    <g class="cls-section">
+      <text x="8" y="44">+ username: str</text>
+      <text x="8" y="60">+ password: str</text>
+    </g>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       ROUTE HANDLERS (middle band)
+  ═══════════════════════════════════════════ -->
+  <!-- login -->
+  <g class="cls-box" transform="translate(30,290)">
+    <rect width="190" height="74" rx="4"/>
+    <g class="cls-header"><rect width="190" height="26" rx="4"/><rect width="190" height="10" y="16"/></g>
+    <text class="stereotype" x="95" y="10" text-anchor="middle">«POST /token»</text>
+    <text class="cls-header" x="95" y="20" text-anchor="middle">login()</text>
+    <line class="cls-divider" x1="0" y1="42" x2="190" y2="42"/>
+    <g class="cls-section">
+      <text x="8" y="57">form: OAuth2PasswordRequestForm</text>
+      <text x="8" y="71">→ access_token: str</text>
+    </g>
+  </g>
+
+  <!-- list_accounts -->
+  <g class="cls-box" transform="translate(240,290)">
+    <rect width="190" height="74" rx="4"/>
+    <g class="cls-header"><rect width="190" height="26" rx="4"/><rect width="190" height="10" y="16"/></g>
+    <text class="stereotype" x="95" y="10" text-anchor="middle">«GET /accounts»</text>
+    <text class="cls-header" x="95" y="20" text-anchor="middle">list_accounts()</text>
+    <line class="cls-divider" x1="0" y1="42" x2="190" y2="42"/>
+    <g class="cls-section">
+      <text x="8" y="57">token: str (OAuth2)</text>
+      <text x="8" y="71">→ List[dict]</text>
+    </g>
+  </g>
+
+  <!-- customers -->
+  <g class="cls-box" transform="translate(450,290)">
+    <rect width="190" height="74" rx="4"/>
+    <g class="cls-header"><rect width="190" height="26" rx="4"/><rect width="190" height="10" y="16"/></g>
+    <text class="stereotype" x="95" y="10" text-anchor="middle">«GET /customers»</text>
+    <text class="cls-header" x="95" y="20" text-anchor="middle">customers()</text>
+    <line class="cls-divider" x1="0" y1="42" x2="190" y2="42"/>
+    <g class="cls-section">
+      <text x="8" y="57">token: str (OAuth2)</text>
+      <text x="8" y="71">→ List[dict] [BACKOFFICE]</text>
+    </g>
+  </g>
+
+  <!-- tx_list -->
+  <g class="cls-box" transform="translate(660,290)">
+    <rect width="210" height="74" rx="4"/>
+    <g class="cls-header"><rect width="210" height="26" rx="4"/><rect width="210" height="10" y="16"/></g>
+    <text class="stereotype" x="105" y="10" text-anchor="middle">«GET /transactions/{id}»</text>
+    <text class="cls-header" x="105" y="20" text-anchor="middle">tx_list()</text>
+    <line class="cls-divider" x1="0" y1="42" x2="210" y2="42"/>
+    <g class="cls-section">
+      <text x="8" y="57">account_id: str, token: str</text>
+      <text x="8" y="71">→ List[dict]</text>
+    </g>
+  </g>
+
+  <!-- make_transfer -->
+  <g class="cls-box" transform="translate(30,430)">
+    <rect width="190" height="74" rx="4"/>
+    <g class="cls-header"><rect width="190" height="26" rx="4"/><rect width="190" height="10" y="16"/></g>
+    <text class="stereotype" x="95" y="10" text-anchor="middle">«POST /transfer»</text>
+    <text class="cls-header" x="95" y="20" text-anchor="middle">make_transfer()</text>
+    <line class="cls-divider" x1="0" y1="42" x2="190" y2="42"/>
+    <g class="cls-section">
+      <text x="8" y="57">body: Transfer, token: str</text>
+      <text x="8" y="71">→ dict (POSTED)</text>
+    </g>
+  </g>
+
+  <!-- set_overdraft -->
+  <g class="cls-box" transform="translate(240,430)">
+    <rect width="220" height="74" rx="4"/>
+    <g class="cls-header"><rect width="220" height="26" rx="4"/><rect width="220" height="10" y="16"/></g>
+    <text class="stereotype" x="110" y="10" text-anchor="middle">«PATCH /accounts/{id}/overdraft»</text>
+    <text class="cls-header" x="110" y="20" text-anchor="middle">set_overdraft()</text>
+    <line class="cls-divider" x1="0" y1="42" x2="220" y2="42"/>
+    <g class="cls-section">
+      <text x="8" y="57">account_id: str, limit_eur: float</text>
+      <text x="8" y="71">→ dict [BACKOFFICE]</text>
+    </g>
+  </g>
+
+  <!-- manual_post -->
+  <g class="cls-box" transform="translate(480,430)">
+    <rect width="210" height="74" rx="4"/>
+    <g class="cls-header"><rect width="210" height="26" rx="4"/><rect width="210" height="10" y="16"/></g>
+    <text class="stereotype" x="105" y="10" text-anchor="middle">«POST /transactions/{id}»</text>
+    <text class="cls-header" x="105" y="20" text-anchor="middle">manual_post()</text>
+    <line class="cls-divider" x1="0" y1="42" x2="210" y2="42"/>
+    <g class="cls-section">
+      <text x="8" y="57">account_id: str, tx: ManualTx</text>
+      <text x="8" y="71">→ dict [BACKOFFICE]</text>
+    </g>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       HELPER / UTILITY functions
+  ═══════════════════════════════════════════ -->
+  <g class="util-box" transform="translate(30,580)">
+    <rect width="380" height="90" rx="4"/>
+    <g class="util-header"><rect width="380" height="26" rx="4"/><rect width="380" height="10" y="16"/></g>
+    <text class="stereotype" x="190" y="10" text-anchor="middle">«utility functions»</text>
+    <text class="util-header" x="190" y="20" text-anchor="middle">Helpers (demo_api.py)</text>
+    <line class="cls-divider" x1="0" y1="42" x2="380" y2="42"/>
+    <g class="cls-section">
+      <text x="8" y="57">+ get_db() → Generator[sqlite3.Connection]</text>
+      <text x="8" y="73">+ verify(tok, db) → Row</text>
+      <text x="8" y="89">+ require_role(row, allowed) → Row</text>
+    </g>
+  </g>
+
+  <!-- Client classes -->
+  <g class="util-box" transform="translate(460,580)">
+    <rect width="240" height="90" rx="4"/>
+    <g class="util-header"><rect width="240" height="26" rx="4"/><rect width="240" height="10" y="16"/></g>
+    <text class="stereotype" x="120" y="10" text-anchor="middle">«CLI module»</text>
+    <text class="util-header" x="120" y="20" text-anchor="middle">TellerClient</text>
+    <line class="cls-divider" x1="0" y1="42" x2="240" y2="42"/>
+    <g class="cls-section">
+      <text x="8" y="57">+ login() → str</text>
+      <text x="8" y="73">+ get_accounts(token) → list</text>
+      <text x="8" y="89">+ post_transfer(token,…) → dict</text>
+    </g>
+  </g>
+
+  <g class="util-box" transform="translate(730,580)">
+    <rect width="250" height="90" rx="4"/>
+    <g class="util-header"><rect width="250" height="26" rx="4"/><rect width="250" height="10" y="16"/></g>
+    <text class="stereotype" x="125" y="10" text-anchor="middle">«CLI module»</text>
+    <text class="util-header" x="125" y="20" text-anchor="middle">BackofficeClient</text>
+    <line class="cls-divider" x1="0" y1="42" x2="250" y2="42"/>
+    <g class="cls-section">
+      <text x="8" y="57">+ login() → str</text>
+      <text x="8" y="73">+ get(endpoint, tok) → json</text>
+      <text x="8" y="89">+ post(endpoint, tok, payload) → json</text>
+    </g>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       ARROWS
+  ═══════════════════════════════════════════ -->
+  <defs>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow-head"/>
+    </marker>
+    <marker id="ah-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow-head-blue"/>
+    </marker>
+    <marker id="ah-purple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow-head-purple"/>
+    </marker>
+  </defs>
+
+  <!-- app → route handlers (association) -->
+  <line class="arrow-assoc" x1="510" y1="76" x2="125" y2="290" marker-end="url(#ah-blue)"/>
+  <line class="arrow-assoc" x1="510" y1="76" x2="335" y2="290" marker-end="url(#ah-blue)"/>
+  <line class="arrow-assoc" x1="510" y1="76" x2="545" y2="290" marker-end="url(#ah-blue)"/>
+  <line class="arrow-assoc" x1="510" y1="76" x2="765" y2="290" marker-end="url(#ah-blue)"/>
+  <line class="arrow-assoc" x1="510" y1="76" x2="125" y2="430" marker-end="url(#ah-blue)"/>
+  <line class="arrow-assoc" x1="510" y1="76" x2="350" y2="430" marker-end="url(#ah-blue)"/>
+  <line class="arrow-assoc" x1="510" y1="76" x2="585" y2="430" marker-end="url(#ah-blue)"/>
+
+  <!-- make_transfer → Transfer (uses) -->
+  <line class="dep-purple" x1="125" y1="430" x2="145" y2="230" marker-end="url(#ah-purple)"/>
+  <text class="lbl" x="60" y="360">«uses»</text>
+
+  <!-- manual_post → ManualTx (uses) -->
+  <line class="dep-purple" x1="585" y1="430" x2="395" y2="230" marker-end="url(#ah-purple)"/>
+  <text class="lbl" x="490" y="355">«uses»</text>
+
+  <!-- login → OAuth2PasswordRequestForm -->
+  <line class="dep-purple" x1="125" y1="290" x2="655" y2="214" marker-end="url(#ah-purple)"/>
+  <text class="lbl" x="300" y="250">«uses»</text>
+
+  <!-- route handlers → helpers (dependency) -->
+  <line class="arrow-dep" x1="220" y1="580" x2="220" y2="504" marker-end="url(#ah)"/>
+  <text class="lbl" x="230" y="545">«calls»</text>
+
+  <!-- clients → app (HTTP) -->
+  <line class="arrow-dep" x1="580" y1="580" x2="510" y2="76" marker-end="url(#ah)"/>
+  <text class="lbl" x="560" y="400">HTTP</text>
+  <line class="arrow-dep" x1="855" y1="580" x2="520" y2="76" marker-end="url(#ah)"/>
+
+  <!-- ═══════════════════════════════════════════
+       LEGEND
+  ═══════════════════════════════════════════ -->
+  <g transform="translate(820,140)">
+    <rect x="0" y="0" width="240" height="130" rx="6" fill="#f7f8fa" stroke="#e5e7eb"/>
+    <text x="12" y="20" style="font-weight:700;font-size:12px;fill:#1f2328">Legend</text>
+    <rect x="12" y="32" width="16" height="12" rx="2" fill="#3b82d4" class="legend-rect"/>
+    <text x="36" y="43" class="lbl">FastAPI route handler</text>
+    <rect x="12" y="54" width="16" height="12" rx="2" fill="#7c5cd8" class="legend-rect"/>
+    <text x="36" y="65" class="lbl">Pydantic model</text>
+    <rect x="12" y="76" width="16" height="12" rx="2" fill="#57606a" class="legend-rect"/>
+    <text x="36" y="87" class="lbl">Utility / CLI module</text>
+    <line x1="12" y1="104" x2="28" y2="104" class="arrow-assoc" marker-end="url(#ah-blue)"/>
+    <text x="36" y="108" class="lbl">Association (registers)</text>
+    <line x1="12" y1="120" x2="28" y2="120" stroke="#57606a" stroke-width="1.5" stroke-dasharray="4 2" fill="none" marker-end="url(#ah)"/>
+    <text x="36" y="124" class="lbl">Dependency / uses</text>
+  </g>
+
+</svg>
+</div>
+
+<footer>Made with IBM Bob</footer>
+</body>
+</html>

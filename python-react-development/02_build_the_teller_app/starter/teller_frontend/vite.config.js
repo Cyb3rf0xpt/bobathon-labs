@@ -10,6 +10,19 @@ const BACKEND =
 // /api/accounts, etc., and they are proxied to the backend with the /api prefix stripped.
 export default defineConfig({
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.js'],
+    css: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      thresholds: { lines: 80, branches: 80 },
+      include: ['src/**/*.{js,jsx}'],
+      exclude: ['src/main.jsx', 'src/test/**'],
+    },
+  },
   server: {
     port: 3000,
     open: true,

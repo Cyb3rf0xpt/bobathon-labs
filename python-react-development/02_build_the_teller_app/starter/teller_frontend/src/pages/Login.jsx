@@ -14,8 +14,10 @@ import { useAuth } from '../auth/AuthContext';
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  // Username can be pre-filled from env as a convenience (not a secret).
+  // Password is NEVER pre-filled — credentials must not be baked into the client bundle.
   const [username, setUsername] = useState(import.meta.env.VITE_TELLER_USERNAME || '');
-  const [password, setPassword] = useState(import.meta.env.VITE_TELLER_PASSWORD || '');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 

@@ -33,8 +33,29 @@ export const formatIban = (iban) => {
   return clean.match(/.{1,4}/g)?.join(' ') || clean;
 };
 
-/** Basic IBAN shape check (2 letters + 2 digits + alphanumerics). */
+/**
+ * IBAN validation — shape check + ISO 13616 MOD-97 checksum (VULN-08).
+ * A pure shape check (previous version) accepted invalid IBANs like DE00…
+ * which pass the regex but have a wrong check digit.
+ */
 export const isValidIban = (iban) => {
   if (!iban || typeof iban !== 'string') return false;
-  return /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/.test(iban.replace(/\s/g, '').toUpperCase());
+  const clean = iban.replace(/\s/g, '').toUpperCase();
+
+  // Shape: 2 letters + 2 digits + 1–30 alphanumerics, total 4–34 chars
+  if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/.test(clean)) return false;
+
+  // MOD-97 checksum (ISO 13616):
+  // 1. Move the first 4 characters to the end
+  // 2. Replace each letter with its numeric value (A=10, B=11, … Z=35)
+  // 3. Compute the number modulo 97 — valid IBANs give remainder 1
+  const rearranged = clean.slice(4) + clean.slice(0, 4);
+  const numeric = rearranged.replace(/[A-Z]/g, (ch) => String(ch.charCodeAt(0) - 55));
+
+  // Process in chunks to avoid BigInt / precision issues with large numbers
+  let remainder = '';
+  for (const ch of numeric) {
+    remainder = String(Number(remainder + ch) % 97);
+  }
+  return Number(remainder) === 1;
 };

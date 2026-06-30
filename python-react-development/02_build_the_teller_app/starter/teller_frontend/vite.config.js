@@ -41,6 +41,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    // VULN-03: never emit source maps in production — they expose full unminified source
+    // to anyone who requests the .map file from the deployed server.
+    sourcemap: false,
   },
 });

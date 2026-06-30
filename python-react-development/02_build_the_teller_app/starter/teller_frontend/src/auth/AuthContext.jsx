@@ -3,14 +3,16 @@ import {
   login as apiLogin,
   logout as apiLogout,
   getAuthToken,
+  SESSION_NONCE_VALUE,
 } from '../services/api';
 
-// Reactive auth state on top of the api token store (which persists in
-// sessionStorage). Pre-wired so protected routes survive refresh and the UI
-// re-renders on login/logout. Use the useAuth() hook in your pages.
+// Reactive auth state on top of the in-memory token store.
+// Token is memory-only (no sessionStorage) — a page refresh requires re-login.
+// This is the correct security trade-off for a banking workstation (VULN-06).
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  // Token starts null — memory-only, no sessionStorage bootstrap (VULN-06)
   const [token, setToken] = useState(() => getAuthToken());
 
   const login = async (username, password) => {
@@ -24,9 +26,15 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
-  // The api layer fires 'session-expired' on a 401 — reflect that here.
+  // VULN-09: verify the nonce before acting on session-expired events.
+  // A bare CustomEvent dispatched by malicious JS will not carry the correct nonce
+  // and will be ignored, preventing forced-logout denial-of-service.
   useEffect(() => {
-    const onExpired = () => setToken(null);
+    const onExpired = (e) => {
+      if (e?.detail?.nonce === SESSION_NONCE_VALUE) {
+        setToken(null);
+      }
+    };
     window.addEventListener('session-expired', onExpired);
     return () => window.removeEventListener('session-expired', onExpired);
   }, []);

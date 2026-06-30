@@ -241,23 +241,22 @@ print("class_diagram.png written")
 # ═════════════════════════════════════════════
 # 2. DATA MODEL DIAGRAM (ERD)
 # ═════════════════════════════════════════════
-fig2, ax2 = plt.subplots(figsize=(16, 11))
+fig2, ax2 = plt.subplots(figsize=(16, 13))
 ax2.set_xlim(0, 16)
-ax2.set_ylim(0, 11)
+ax2.set_ylim(0, 13)
 ax2.axis("off")
 ax2.set_facecolor("#f7f8fa")
 fig2.patch.set_facecolor("#f7f8fa")
 
-ax2.text(8, 10.75, "Data Model Diagram — Corebank SQLite Database",
+ax2.text(8, 12.75, "Data Model Diagram — Corebank SQLite Database",
          ha="center", va="center", fontsize=14, fontweight="bold", color="#1f2328")
-ax2.text(8, 10.50, "corebank.db  ·  5 tables",
+ax2.text(8, 12.50, "corebank.db  ·  5 tables",
          ha="center", va="center", fontsize=9, color="#57606a")
 
-PK = "🔑 "  # unicode key — fallback to text below if font missing
 def erd_box(ax, x, y, w, title, cols, pk_rows=(), fk_rows=()):
     """cols: list of (name, type) tuples."""
-    row_h = 0.33
-    body_h = len(cols) * row_h + 0.2
+    row_h = 0.34
+    body_h = len(cols) * row_h + 0.22
     total_h = 0.52 + body_h
 
     outer = FancyBboxPatch((x, y - total_h), w, total_h,
@@ -276,7 +275,7 @@ def erd_box(ax, x, y, w, title, cols, pk_rows=(), fk_rows=()):
             color="#3b82d4", linewidth=0.8, zorder=4)
 
     for i, (col, typ) in enumerate(cols):
-        ry = y - 0.52 - 0.14 - i * row_h
+        ry = y - 0.52 - 0.17 - i * row_h
         prefix = ""
         style = "normal"
         col_color = "#1f2328"
@@ -287,21 +286,20 @@ def erd_box(ax, x, y, w, title, cols, pk_rows=(), fk_rows=()):
         elif col in fk_rows:
             prefix = "FK  "
             col_color = "#1a6b3c"
-        ax.text(x + 0.10, ry, f"{prefix}{col}",
+        ax.text(x + 0.12, ry, f"{prefix}{col}",
                 ha="left", va="center", fontsize=7.5,
                 color=col_color, fontstyle="normal",
                 fontweight=style, zorder=4)
-        ax.text(x + w - 0.10, ry, typ,
+        ax.text(x + w - 0.12, ry, typ,
                 ha="right", va="center", fontsize=7,
                 color="#57606a", zorder=4)
 
-    # return centre-x, top-y, centre-x, bottom-y
     return x + w/2, y, x + w/2, y - total_h
 
 
-# Tables
+# ── Row 1: customers / accounts / transactions ──
 cx_cust, _, _, cy_cust_bot = erd_box(
-    ax2, 0.4, 9.8, 3.8, "customers",
+    ax2, 0.4, 11.8, 3.8, "customers",
     [("customer_id", "TEXT PK"),
      ("type", "TEXT"),
      ("name", "TEXT"),
@@ -310,7 +308,7 @@ cx_cust, _, _, cy_cust_bot = erd_box(
     pk_rows=("customer_id",))
 
 cx_acc, cy_acc_top, _, cy_acc_bot = erd_box(
-    ax2, 5.2, 9.8, 4.0, "accounts",
+    ax2, 5.2, 11.8, 4.0, "accounts",
     [("account_id", "TEXT PK"),
      ("customer_id", "TEXT FK"),
      ("iban", "TEXT UNIQUE"),
@@ -322,7 +320,7 @@ cx_acc, cy_acc_top, _, cy_acc_bot = erd_box(
     fk_rows=("customer_id",))
 
 cx_tx, cy_tx_top, _, cy_tx_bot = erd_box(
-    ax2, 10.6, 9.8, 4.6, "transactions",
+    ax2, 10.6, 11.8, 4.6, "transactions",
     [("tx_id", "TEXT PK"),
      ("account_id", "TEXT FK"),
      ("booking_ts", "DATETIME"),
@@ -331,8 +329,9 @@ cx_tx, cy_tx_top, _, cy_tx_bot = erd_box(
     pk_rows=("tx_id",),
     fk_rows=("account_id",))
 
+# ── Row 2: credit_lines / users ──────────────────
 cx_cl, cy_cl_top, _, cy_cl_bot = erd_box(
-    ax2, 5.2, 4.6, 4.2, "credit_lines",
+    ax2, 3.6, 6.8, 4.2, "credit_lines",
     [("credit_id", "TEXT PK"),
      ("account_id", "TEXT FK"),
      ("limit_eur", "REAL"),
@@ -344,64 +343,68 @@ cx_cl, cy_cl_top, _, cy_cl_bot = erd_box(
     fk_rows=("account_id",))
 
 cx_usr, _, _, cy_usr_bot = erd_box(
-    ax2, 10.8, 4.6, 4.0, "users",
+    ax2, 10.0, 6.8, 4.0, "users",
     [("username", "TEXT PK"),
      ("hashed_password", "TEXT"),
      ("role", "TEXT")],
     pk_rows=("username",))
 
-# ── FK arrows ────────────────────────────────
+# ── FK arrows ────────────────────────────────────
 def fk_line(ax, x1, y1, x2, y2, label=""):
     ax.annotate("", xy=(x2, y2), xytext=(x1, y1),
                 arrowprops=dict(arrowstyle="-|>", color="#3b82d4",
                                 lw=1.3, linestyle="-"),
                 zorder=5)
     if label:
-        ax.text((x1+x2)/2 + 0.08, (y1+y2)/2, label,
+        ax.text((x1+x2)/2 + 0.1, (y1+y2)/2, label,
                 fontsize=6.5, color="#57606a", zorder=6)
 
 # customers 1──< accounts
 fk_line(ax2, cx_cust, cy_cust_bot, cx_acc, cy_acc_top, "1 : N")
 # accounts 1──< transactions
-fk_line(ax2, cx_acc + 0.5, cy_acc_bot, cx_tx - 0.3, cy_tx_top, "1 : N")
+fk_line(ax2, cx_acc + 0.6, cy_acc_bot, cx_tx - 0.4, cy_tx_top, "1 : N")
 # accounts 1──< credit_lines
-fk_line(ax2, cx_acc, cy_acc_bot, cx_cl, cy_cl_top, "1 : N")
+fk_line(ax2, cx_acc, cy_acc_bot, cx_cl + 0.2, cy_cl_top, "1 : N")
 
-# ── Cardinality / constraint notes ───────────────
-notes = [
-    (5.2, 2.2, "accounts.customer_id → customers.customer_id"),
-    (5.2, 1.9, "transactions.account_id → accounts.account_id"),
-    (5.2, 1.6, "credit_lines.account_id → accounts.account_id"),
-    (5.2, 1.3, "accounts.iban  UNIQUE"),
-]
-ax2.text(8, 2.55, "Foreign Key Constraints", ha="center",
+# ── Separator ─────────────────────────────────────
+ax2.plot([1, 15], [3.2, 3.2], color="#e5e7eb", linewidth=0.8)
+
+# ── FK constraint notes ───────────────────────────
+ax2.text(8, 3.05, "Foreign Key Constraints", ha="center",
          fontsize=8.5, fontweight="bold", color="#1f2328")
-ax2.plot([1, 15], [2.40, 2.40], color="#e5e7eb", linewidth=0.7)
-for nx, ny, note in notes:
-    ax2.text(nx, ny, f"• {note}", fontsize=7.5, color="#57606a")
+notes = [
+    "accounts.customer_id  →  customers.customer_id",
+    "transactions.account_id  →  accounts.account_id",
+    "credit_lines.account_id  →  accounts.account_id",
+    "accounts.iban  UNIQUE",
+]
+for i, note in enumerate(notes):
+    ax2.text(8, 2.65 - i * 0.38, f"• {note}",
+             ha="center", fontsize=8, color="#57606a")
 
-# ── Legend ────────────────────────────────────
-ax2.add_patch(FancyBboxPatch((0.4, 2.4), 4.3, 1.05,
+# ── Legend ────────────────────────────────────────
+lx2, ly2 = 0.4, 3.1
+ax2.add_patch(FancyBboxPatch((lx2, ly2 - 1.3), 3.8, 1.3,
                              boxstyle="round,pad=0.04",
                              linewidth=1, edgecolor="#e5e7eb",
                              facecolor="#ffffff", zorder=2))
-ax2.text(2.55, 3.3, "Legend", ha="center", fontsize=8,
+ax2.text(lx2 + 1.9, ly2 - 0.2, "Legend", ha="center", fontsize=8,
          fontweight="bold", color="#1f2328", zorder=3)
 for i, (col, lbl) in enumerate([
     ("#c05c00", "PK – Primary Key"),
     ("#1a6b3c", "FK – Foreign Key"),
     ("#57606a", "regular column"),
 ]):
-    iy = 3.0 - i * 0.30
-    ax2.add_patch(FancyBboxPatch((0.55, iy - 0.10), 0.28, 0.20,
+    iy = ly2 - 0.62 - i * 0.32
+    ax2.add_patch(FancyBboxPatch((lx2 + 0.15, iy - 0.11), 0.28, 0.22,
                                  boxstyle="round,pad=0.01",
                                  facecolor=col, edgecolor=col, zorder=3))
-    ax2.text(1.0, iy, lbl, va="center", fontsize=7,
+    ax2.text(lx2 + 0.60, iy, lbl, va="center", fontsize=7.5,
              color="#1f2328", zorder=3)
 
-ax2.text(8, 0.18, "Made with IBM Bob",
+ax2.text(8, 0.20, "Made with IBM Bob",
          ha="center", fontsize=7.5, color="#57606a")
-ax2.plot([1, 15], [0.30, 0.30], color="#e5e7eb", linewidth=0.7)
+ax2.plot([1, 15], [0.33, 0.33], color="#e5e7eb", linewidth=0.7)
 
 plt.tight_layout(pad=0.4)
 plt.savefig(os.path.join(OUT, "data_model_diagram.png"), dpi=160, bbox_inches="tight")

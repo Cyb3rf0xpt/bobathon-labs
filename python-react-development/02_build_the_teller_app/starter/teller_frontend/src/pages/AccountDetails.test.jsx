@@ -62,7 +62,8 @@ describe('AccountDetails page', () => {
     api.getBalanceByIban.mockResolvedValueOnce(mockBalance);
     api.getTransactions.mockResolvedValueOnce(mockTransactions);
     renderPage();
-    await waitFor(() => expect(screen.getByText('€5,581.33')).toBeInTheDocument());
+    // current and available are both €5,581.33 — use getAllByText
+    await waitFor(() => expect(screen.getAllByText('€5,581.33').length).toBeGreaterThanOrEqual(2));
     expect(screen.getByText('Current Balance')).toBeInTheDocument();
     expect(screen.getByText('Available Balance')).toBeInTheDocument();
     expect(screen.getByText('Overdraft Limit')).toBeInTheDocument();
@@ -73,12 +74,12 @@ describe('AccountDetails page', () => {
     api.getBalanceByIban.mockResolvedValueOnce(mockNegativeBalance);
     api.getTransactions.mockResolvedValueOnce([]);
     renderPage();
-    await waitFor(() => screen.getByText(/−?€?500/));
-    // Find the balance value element and check its colour style
-    const balanceEl = screen.getAllByText(/€/).find(
-      (el) => el.style?.color?.includes('support-error') || el.getAttribute('style')?.includes('support-error'),
+    // Both current and available are negative; find one with the error token style
+    await waitFor(() => screen.getAllByText(/-€500\.00/));
+    const errorEls = screen.getAllByText(/-€500\.00/).filter(
+      (el) => el.getAttribute('style')?.includes('support-error'),
     );
-    expect(balanceEl).toBeTruthy();
+    expect(errorEls.length).toBeGreaterThanOrEqual(1);
   });
 
   it('ACC-4: transaction table renders date, type, and amount', async () => {
@@ -97,10 +98,14 @@ describe('AccountDetails page', () => {
     api.getTransactions.mockResolvedValueOnce(mockTransactions);
     renderPage();
     await waitFor(() => screen.getByText('PAYMENT'));
-    // Open the MultiSelect and select TRANSFER_OUT
-    const multiSelectBtn = screen.getByText(/filter by type/i);
-    await userEvent.click(multiSelectBtn);
-    await userEvent.click(screen.getByText('TRANSFER_OUT'));
+    // Open MultiSelect via its toggle button (combobox role)
+    const toggleBtn = screen.getByRole('combobox', { name: /filter by type/i });
+    await userEvent.click(toggleBtn);
+    // Click the TRANSFER_OUT option in the listbox
+    await waitFor(() => screen.getByRole('option', { name: /TRANSFER_OUT/i }));
+    await userEvent.click(screen.getByRole('option', { name: /TRANSFER_OUT/i }));
+    // Close the dropdown
+    await userEvent.keyboard('{Escape}');
     // PAYMENT row should be gone
     await waitFor(() => expect(screen.queryByText('PAYMENT')).not.toBeInTheDocument());
   });
